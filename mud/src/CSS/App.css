@@ -24,7 +24,13 @@
 .Map {
   background-color: #09d3ac;
   width: 100vw;
-  height: 80vh;
+  height: 75vh;
+}
+
+.Controls {
+  background-color: rgb(71, 69, 69);
+  width: 100vw;
+  height: 5vh;
 }
 
 .Info {
@@ -33,9 +39,10 @@
   display: flex;
 }
 
-.Character_stats {
+.Character_location {
   background-color: rgb(90, 63, 63);
   width: 50%;
+  align-content: center;
 }
 
 .Invetory {

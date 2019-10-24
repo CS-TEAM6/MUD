@@ -1,10 +1,10 @@
-import React from 'react';
+import React, {Component} from 'react';
 import './CSS/App.css';
 import { Promise } from 'q';
+import { createConnection } from 'net';
 require('dotenv').config();
 const axios = require('axios');
 const token = process.env.REACT_APP_TOKEN;
-
 
 // Main axios call to api, using async and await to act as cooldown
 async function playerCD(endpoint, method, data){
@@ -31,34 +31,91 @@ function cooldown(cd) {
   return new Promise(resolve => setTimeout(resolve, cd))
 }
 
-function App() {
-  console.log(token)
-  return (
-    
-    <div className="App">
+class App extends Component{
+  constructor() {
+    super()
+    this.state = {
+      init: {}
+    }
+  }
+  
+  componentDidMount() {
+    var room = init()
+    room.then(res => {
+      console.log(res)
+      this.setState({init: res}) 
+    })
+
+    var invetory = status()
+    invetory.then(res => {
+      console.log(res)
+      this.setState({init: res}) 
+    })
+
+  }
+
+  render() {
+    const {room_id} = this.state.init
+
+    return(
+      <div className="App">
       <div className="Map">
-        Map
-        <button onClick={init}>Init
-        </button>
+      </div>
+
+      <div className="Controls">
+
       </div>
 
       <div className="Info">  
-        <div className="Character_stats">
+        <div className="Character_location">
+          <span className="">Current Room: {this.state.init.room_id}, {this.state.init.title}</span> <br/>
+          <span>Room Description: {this.state.init.description} </span> <br/>
+          <span>Exits: {this.state.init.exits}</span> <br/>
+          <span>Location: {this.state.init.coordinates}</span>
         </div>
         <div className="Inventory">
 
         </div>
       </div>
     </div>
-  );
+    )
+  }
 }
+
+// function App() {
+//     return (
+    
+//     <div className="App">
+//       <div className="Map">
+//         <button onClick={init}>Init
+//         </button>
+//         <div>{init.room_id}</div>
+//         <button onClick={status}>Stat
+//         </button>
+//         {/* <form>
+//           direction: <input type="text" name="direction"/><br/>
+//           room: <input type="text" name="room"/><br/>
+//           <input type="submit" value="Move" onClick="move('')"/>
+//           <input type="submit" value="Wise Move" />
+//         </form> */}
+//       </div>
+
+//       <div className="Info">  
+//         <div className="Character_stats">
+//         </div>
+//         <div className="Inventory">
+
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 export default App;
 
 //API calls
 async function init() {
   var init = (await playerCD('adv/init/', 'get'))
-  console.log(init)
   return init
 }
 
@@ -122,8 +179,8 @@ async function transmogrify(item) {
   return transmogrify
 }
 
+//Map print and player location
 
-//Map
 
 
 //Play
