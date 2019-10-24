@@ -8,7 +8,6 @@ const token = process.env.REACT_APP_TOKEN;
 
 // Main axios call to api, using async and await to act as cooldown
 async function playerCD(endpoint, method, data){
-  console.log("playerCD:" + data)
   try {
     let res = await axios({
       baseURL: 'https://lambda-treasure-hunt.herokuapp.com/api/',
@@ -36,31 +35,73 @@ class App extends Component{
   constructor() {
     super()
     this.state = {
-      init: {}
+      room: {},
+      invetory: {}
     }
+
+    this.goNorth = this.goNorth.bind(this)
+    this.goSouth = this.goSouth.bind(this)
+    this.goEast = this.goEast.bind(this)
+    this.goWest = this.goWest.bind(this)
   }
   
   componentDidMount() {
     var room = init()
     room.then(res => {
       console.log(res)
-      this.setState({init: res}) 
+      this.setState({room: res}) 
     })
 
-    var invetory = status()
-    invetory.then(res => {
-      console.log(res)
-      this.setState({init: res}) 
-    })
+    // var invetory = status()
+    // invetory.then(res => {
+    //   console.log(res)
+    //   this.setState({invetory: res}) 
+    // })
 
+  }
+
+  updateRoom(info) {
+    this.setState({room: info})
   }
 
   goNorth() {
-    move({"direction": "n"})
+    var info = move({"direction": "n"})
+    info.then(res => {
+      console.log(res)
+      this.setState({room: res}) 
+    })
+  }
+
+  goEast() {
+    var info = move({"direction": "e"})
+    info.then(res => {
+      console.log(res)
+      this.setState({room: res}) 
+    })
   }
 
   goSouth() {
-    move({"direction": "s"})
+    var info = move({"direction": "s"})
+    info.then(res => {
+      console.log(res)
+      this.setState({room: res}) 
+    })
+  }
+
+  goWest() {
+    var info = move({"direction": "w"})
+    info.then(res => {
+      console.log(res)
+      this.setState({room: res}) 
+    })
+  }
+
+  lookat() {
+    var info = examine({"name": "well"})
+    info.then(res => {
+      console.log(res)
+      //this.setState({room: res}) 
+    })
   }
 
   render() {
@@ -71,15 +112,20 @@ class App extends Component{
 
       <div className="Controls">
         <button onClick={this.goNorth} >N</button>
+        <button onClick={this.goEast} >E</button>
         <button onClick={this.goSouth} >S</button>
+        <button onClick={this.goWest} >W</button>
+        Action Cooldown: {this.state.room.cooldown}
+
+        <button onClick={this.lookat} >examine</button>
       </div>
 
       <div className="Info">  
         <div className="Character_location">
-          <span className="">Current Room: {this.state.init.room_id}, {this.state.init.title}</span> <br/>
-          <span>Room Description: {this.state.init.description} </span> <br/>
-          <span>Exits: {this.state.init.exits}</span> <br/>
-          <span>Location: {this.state.init.coordinates}</span>
+          <span className="">Current Room: {this.state.room.room_id}, {this.state.room.title}</span> <br/>
+          <span>Room Description: {this.state.room.description} </span> <br/>
+          <span>Exits: {this.state.room.exits}</span> <br/>
+          <span>Location: {this.state.room.coordinates}</span>
         </div>
         <div className="Inventory">
 
@@ -89,35 +135,6 @@ class App extends Component{
     )
   }
 }
-
-// function App() {
-//     return (
-    
-//     <div className="App">
-//       <div className="Map">
-//         <button onClick={init}>Init
-//         </button>
-//         <div>{init.room_id}</div>
-//         <button onClick={status}>Stat
-//         </button>
-//         {/* <form>
-//           direction: <input type="text" name="direction"/><br/>
-//           room: <input type="text" name="room"/><br/>
-//           <input type="submit" value="Move" onClick="move('')"/>
-//           <input type="submit" value="Wise Move" />
-//         </form> */}
-//       </div>
-
-//       <div className="Info">  
-//         <div className="Character_stats">
-//         </div>
-//         <div className="Inventory">
-
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 
 export default App;
 
@@ -134,13 +151,17 @@ async function status() {
 
 async function move(direction) {
   var move = (await playerCD('adv/move/', 'post', direction))
-  init()
-  return move, init
+  return move
 }
 
 async function movewise(direction) {
   var movewise = (await playerCD('adv/move/', 'post', 'direction'))
   return movewise
+}
+
+async function examine(item) {
+  var examine = (await playerCD('adv/examine', 'post', item))
+  return examine
 }
 
 async function take(item) {
