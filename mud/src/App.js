@@ -8,6 +8,7 @@ const token = process.env.REACT_APP_TOKEN;
 
 // Main axios call to api, using async and await to act as cooldown
 async function playerCD(endpoint, method, data){
+  console.log("playerCD:" + data)
   try {
     let res = await axios({
       baseURL: 'https://lambda-treasure-hunt.herokuapp.com/api/',
@@ -17,7 +18,7 @@ async function playerCD(endpoint, method, data){
       },
       method: `${method}`,
       url: `${endpoint}`,
-      data: JSON.stringify(data)
+      data: data
     })
     res = await res.data
     await cooldown(res.cooldown * 1000)
@@ -54,16 +55,23 @@ class App extends Component{
 
   }
 
-  render() {
-    const {room_id} = this.state.init
+  goNorth() {
+    move({"direction": "n"})
+  }
 
+  goSouth() {
+    move({"direction": "s"})
+  }
+
+  render() {
     return(
       <div className="App">
       <div className="Map">
       </div>
 
       <div className="Controls">
-
+        <button onClick={this.goNorth} >N</button>
+        <button onClick={this.goSouth} >S</button>
       </div>
 
       <div className="Info">  
@@ -125,8 +133,9 @@ async function status() {
 }
 
 async function move(direction) {
-  var move = (await playerCD('adv/move/', 'post', 'direction'))
-  return move
+  var move = (await playerCD('adv/move/', 'post', direction))
+  init()
+  return move, init
 }
 
 async function movewise(direction) {
