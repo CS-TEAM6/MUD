@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import './CSS/App.css';
 import { Promise } from 'q';
-import { createConnection } from 'net';
 require('dotenv').config();
 const axios = require('axios');
 const token = process.env.REACT_APP_TOKEN;
@@ -36,7 +35,7 @@ class App extends Component{
     super()
     this.state = {
       room: {},
-      invetory: {}
+      inventory: {}
     }
 
     this.goNorth = this.goNorth.bind(this)
@@ -45,90 +44,108 @@ class App extends Component{
     this.goWest = this.goWest.bind(this)
   }
   
-  componentDidMount() {
+  async componentDidMount() {
     var room = init()
     room.then(res => {
-      console.log(res)
       this.setState({room: res}) 
     })
 
-    // var invetory = status()
-    // invetory.then(res => {
-    //   console.log(res)
-    //   this.setState({invetory: res}) 
-    // })
+    await cooldown(1.5 * 1000)
+
+    var inventory = status()
+    inventory.then(res => {
+      this.setState({inventory: res}) 
+    })
 
   }
 
-  updateRoom(info) {
-    this.setState({room: info})
-  }
-
-  goNorth() {
-    var info = move({"direction": "n"})
+  async goNorth() {
+    if (this.state.room.terrain == "MOUNTAIN")
+      var info = fly({"direction": "n"})
+    else
+      var info = move({"direction": "n"})
     info.then(res => {
-      console.log(res)
-      this.setState({room: res}) 
+      this.setState({room: res})
     })
   }
 
-  goEast() {
-    var info = move({"direction": "e"})
+  async goEast() {
+    if (this.state.room.terrain == "MOUNTAIN")
+      var info = fly({"direction": "e"})
+    else
+      var info = move({"direction": "e"})
     info.then(res => {
-      console.log(res)
-      this.setState({room: res}) 
-    })
-  }
-
-  goSouth() {
-    var info = move({"direction": "s"})
-    info.then(res => {
-      console.log(res)
       this.setState({room: res}) 
     })
   }
 
-  goWest() {
-    var info = move({"direction": "w"})
+  async goSouth() {
+    if (this.state.room.terrain == "MOUNTAIN")
+      var info = fly({"direction": "s"})
+    else
+      var info = move({"direction": "s"})
+    
     info.then(res => {
-      console.log(res)
       this.setState({room: res}) 
     })
   }
 
-  lookat() {
-    var info = examine({"name": "well"})
+  async goWest() {
+    if (this.state.room.terrain == "MOUNTAIN")
+      var info = fly({"direction": "w"})
+    else
+      var info = move({"direction": "w"})
     info.then(res => {
-      console.log(res)
+      this.setState({room: res}) 
+    })
+  }
+
+  async lookat() {
+    var info = examine({"name": "tiny treasure"})
+    info.then(res => {
       //this.setState({room: res}) 
     })
+  }
+
+  async item() {
+    var info = take({"name": "tiny treasure"})
+    // info.then(res => {
+    //   this.setState({inventory: res}) 
+    // })
   }
 
   render() {
     return(
       <div className="App">
       <div className="Map">
+        
       </div>
 
       <div className="Controls">
         <button onClick={this.goNorth} >N</button>
         <button onClick={this.goEast} >E</button>
         <button onClick={this.goSouth} >S</button>
-        <button onClick={this.goWest} >W</button>
-        Action Cooldown: {this.state.room.cooldown}
-
-        <button onClick={this.lookat} >examine</button>
+        <button onClick={this.goWest} >W</button> <br/>  
+        <button onClick={this.lookat} >Examine</button> 
+        <button onClick={this.item}>Take</button> <br/>
       </div>
 
       <div className="Info">  
         <div className="Character_location">
-          <span className="">Current Room: {this.state.room.room_id}, {this.state.room.title}</span> <br/>
-          <span>Room Description: {this.state.room.description} </span> <br/>
-          <span>Exits: {this.state.room.exits}</span> <br/>
-          <span>Location: {this.state.room.coordinates}</span>
+          Current Room: {this.state.room.room_id}, {this.state.room.title} <br/>
+          Room Description: {this.state.room.description}  <br/>
+          Terrain: {this.state.room.terrain} <br/>
+          Exits: {this.state.room.exits} <br/>
+          Action: {this.state.room.messages} <br/>
+          Location: {this.state.room.coordinates} <br/>
+          Treasures: {this.state.room.items}
         </div>
         <div className="Inventory">
-
+          Player: {this.state.inventory.name} <br/>
+          Speed: {this.state.inventory.speed}  <br/>
+          Strength: {this.state.inventory.strength} <br/>
+          Gold: {this.state.inventory.gold} <br/>
+          Bag: {this.state.inventory.inventory}
         </div>
       </div>
     </div>
@@ -154,9 +171,9 @@ async function move(direction) {
   return move
 }
 
-async function movewise(direction) {
-  var movewise = (await playerCD('adv/move/', 'post', 'direction'))
-  return movewise
+async function fly(direction) {
+  var fly = (await playerCD('adv/fly/', 'post', direction))
+  return fly
 }
 
 async function examine(item) {
@@ -165,7 +182,7 @@ async function examine(item) {
 }
 
 async function take(item) {
-  var take = (await playerCD('adv/take/', 'post', 'item'))
+  var take = (await playerCD('adv/take/', 'post', item))
   return take
 }
 
