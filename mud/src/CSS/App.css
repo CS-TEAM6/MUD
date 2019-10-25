@@ -37,15 +37,17 @@
   width: 100vw;
   height: 20vh;
   display: flex;
+  font-size: 20px;
 }
 
 .Character_location {
   background-color: rgb(90, 63, 63);
   width: 50%;
-  align-content: center;
+  align-content: left;
 }
 
-.Invetory {
+.Inventory {
   background-color: rgb(170, 148, 148);
   width: 50%;
+  /* align-content: left; */
 }
